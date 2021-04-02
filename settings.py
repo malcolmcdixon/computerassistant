@@ -51,17 +51,17 @@ class SettingsDialog(QDialog):
         # create page
         tab_page = QWidget()
         tab_page.setLayout(form_layout)
-        self.tab.addTab(tab_page, QIcon("mqtt_icon_64x64.png"), "MQTT")
+        self.tab.addTab(tab_page, QIcon("images\mqtt_icon_64x64.png"), "MQTT")
 
         # create button box
         self.button_box = \
             QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
         save_button = self.button_box.buttons()[0]
 
-        save_button.setIcon(QIcon("save_blue_128x128.png"))
+        save_button.setIcon(QIcon("images\save_blue_128x128.png"))
         save_button.setIconSize(QSize(32, 32))
         cancel_button = self.button_box.buttons()[1]
-        cancel_button.setIcon(QIcon("close_blue_128x128.png"))
+        cancel_button.setIcon(QIcon("images\close_blue_128x128.png"))
         cancel_button.setIconSize(QSize(32, 32))
 
         self.button_box.accepted.connect(self.accept)
@@ -88,14 +88,16 @@ class SettingsDialog(QDialog):
         except ValueError:
             colour = "#F6989D"
         finally:
-            self.mqtt_host.setStyleSheet(f"QLineEdit {{ background-color: {colour}}}")
+            self.mqtt_host.setStyleSheet(
+                f"QLineEdit {{ background-color: {colour}}}")
 
     def mqtt_port_text_changed(self, text):
         if self.mqtt_port.validator().validate(text, 0)[0] == QIntValidator.Acceptable:
             colour = "#C4DF9B"
         else:
             colour = "#F6989D"
-        self.mqtt_port.setStyleSheet(f"QLineEdit {{ background-color: {colour}}}")
+        self.mqtt_port.setStyleSheet(
+            f"QLineEdit {{ background-color: {colour}}}")
 
 
 class JSONSettings:

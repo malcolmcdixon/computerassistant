@@ -21,7 +21,7 @@ class SystemTrayIcon(QSystemTrayIcon):
             menu = QMenu()
             # add Settings menu option with bold font
             action = menu.addAction("Settings", self.settings)
-            action.setIcon(QIcon("settings_blue_128x128.png"))
+            action.setIcon(QIcon("images\settings_blue_128x128.png"))
             font = action.font()
             font.setBold(True)
             action.setFont(font)
@@ -29,7 +29,7 @@ class SystemTrayIcon(QSystemTrayIcon):
             menu.addSeparator()
             # add Exit menu option
             action = menu.addAction("Exit", self.exit)
-            action.setIcon(QIcon("close_blue_128x128.png"))
+            action.setIcon(QIcon("images\close_blue_128x128.png"))
             # add menu to system tray icon
             self.setContextMenu(menu)
 
