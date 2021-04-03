@@ -5,10 +5,10 @@
 # classes for working with paho mqtt library
 
 
+import time
+from enum import Enum, unique
 import paho.mqtt.client as mqtt
 from PySide2.QtCore import Signal, Slot
-from enum import Enum, unique
-import time
 
 
 @unique

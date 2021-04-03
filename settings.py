@@ -4,14 +4,18 @@
 # written by m.c.dixon 2020
 # classes for storing settings and settings dialog
 
+import ipaddress
+import json
 from PySide2.QtWidgets import QDialog, QWidget, QLineEdit, QFormLayout,\
     QTabWidget, QVBoxLayout, QDialogButtonBox
 
 from PySide2.QtGui import QIcon, QIntValidator
 from PySide2.QtCore import Qt, QSize
 
-import ipaddress
-import json
+from constants import (
+    CA_MQTT_ICON,
+    CA_SAVE_ICON,
+    CA_CLOSE_ICON)
 
 
 class SettingsDialog(QDialog):
@@ -51,17 +55,17 @@ class SettingsDialog(QDialog):
         # create page
         tab_page = QWidget()
         tab_page.setLayout(form_layout)
-        self.tab.addTab(tab_page, QIcon("images\mqtt_icon_64x64.png"), "MQTT")
+        self.tab.addTab(tab_page, QIcon(CA_MQTT_ICON), "MQTT")
 
         # create button box
         self.button_box = \
             QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
         save_button = self.button_box.buttons()[0]
 
-        save_button.setIcon(QIcon("images\save_blue_128x128.png"))
+        save_button.setIcon(QIcon(CA_SAVE_ICON))
         save_button.setIconSize(QSize(32, 32))
         cancel_button = self.button_box.buttons()[1]
-        cancel_button.setIcon(QIcon("images\close_blue_128x128.png"))
+        cancel_button.setIcon(QIcon(CA_CLOSE_ICON))
         cancel_button.setIconSize(QSize(32, 32))
 
         self.button_box.accepted.connect(self.accept)

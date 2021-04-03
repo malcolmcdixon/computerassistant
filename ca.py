@@ -30,7 +30,9 @@ from constants import (
     MQTT_TIMEOUT,
     Status,
     DEFAULT_SETTINGS,
-    CA_LOGO
+    RESOURCE_BASE_PATH,
+    CA_ICON,
+    CA_SETTINGS
 )
 from settings import JSONSettings, SettingsDialog
 from systray import SystemTrayIcon
@@ -249,7 +251,7 @@ def notify(title, message):
         # can use QSystemTrayIcon.Information |
         # Critical | Warning | NoIcon for icon
         tray_icon.showMessage(title, message,
-                              QIcon(CA_LOGO))
+                              QIcon(CA_ICON))
 
 
 def on_cmd_notify(client, userdata, msg):
@@ -274,7 +276,7 @@ if __name__ == "__main__":
 
     QThread.currentThread().setObjectName(APP_NAME)
 
-    icon_image = QIcon(CA_LOGO)
+    icon_image = QIcon(CA_ICON)
     tray_icon = SystemTrayIcon(icon_image)
     tray_icon.setToolTip("Computer Assistant")
     tray_icon.show()
@@ -285,7 +287,7 @@ if __name__ == "__main__":
 
     # load settings.json
     try:
-        settings = JSONSettings("settings.json", DEFAULT_SETTINGS)
+        settings = JSONSettings(CA_SETTINGS, DEFAULT_SETTINGS)
         if not settings.loaded:
             notify("Settings Error",
                    "Unable to load settings even default settings!")
@@ -294,7 +296,7 @@ if __name__ == "__main__":
 
     logging.debug("Settings loaded")
 
-    dialog = SettingsDialog("Computer Assistant", CA_LOGO, settings)
+    dialog = SettingsDialog("Computer Assistant", CA_ICON, settings)
 
     # load mqtt settings into dialog
     dialog.mqtt_host.setText(str(settings.mqtt_host))

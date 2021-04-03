@@ -4,6 +4,8 @@
 # written by m.c.dixon 2020
 # Constants used in computer assistant
 
+import os
+import sys
 from enum import Enum, unique
 
 
@@ -32,5 +34,18 @@ DEFAULT_SETTINGS = """{
                         "mqtt_password": ""
                       }"""
 
-# Computer Assistant logo
-CA_LOGO = "images/computer-assistant-logo.png"
+# RESOURCES
+# Resource Base Path
+RESOURCE_BASE_PATH = getattr(sys, '_MEIPASS', os.getcwd())
+
+# ICONS
+# Computer Assistant Icon
+CA_ICON = f"{RESOURCE_BASE_PATH}/images/computer-assistant-icon.png"
+CA_MQTT_ICON = f"{RESOURCE_BASE_PATH}/images/mqtt_icon_64x64.png"
+CA_SAVE_ICON = f"{RESOURCE_BASE_PATH}/images/save_blue_128x128.png"
+CA_CLOSE_ICON = f"{RESOURCE_BASE_PATH}/images/close_blue_128x128.png"
+CA_SETTINGS_ICON = f"{RESOURCE_BASE_PATH}/images/settings_blue_128x128.png"
+
+# FILES
+# Settings file
+CA_SETTINGS = f"{RESOURCE_BASE_PATH}/settings.json"

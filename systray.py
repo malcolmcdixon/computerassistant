@@ -8,6 +8,11 @@ from PySide2.QtWidgets import QApplication, QMenu, QSystemTrayIcon
 from PySide2.QtGui import QIcon
 from PySide2.QtCore import Signal
 
+from constants import (
+    CA_SETTINGS_ICON,
+    CA_CLOSE_ICON
+)
+
 
 class SystemTrayIcon(QSystemTrayIcon):
     open_settings = Signal()
@@ -21,7 +26,7 @@ class SystemTrayIcon(QSystemTrayIcon):
             menu = QMenu()
             # add Settings menu option with bold font
             action = menu.addAction("Settings", self.settings)
-            action.setIcon(QIcon("images\settings_blue_128x128.png"))
+            action.setIcon(QIcon(CA_SETTINGS_ICON))
             font = action.font()
             font.setBold(True)
             action.setFont(font)
@@ -29,7 +34,7 @@ class SystemTrayIcon(QSystemTrayIcon):
             menu.addSeparator()
             # add Exit menu option
             action = menu.addAction("Exit", self.exit)
-            action.setIcon(QIcon("images\close_blue_128x128.png"))
+            action.setIcon(QIcon(CA_CLOSE_ICON))
             # add menu to system tray icon
             self.setContextMenu(menu)
 
