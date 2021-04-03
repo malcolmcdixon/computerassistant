@@ -7,6 +7,13 @@
 # the last active window. Notifications can be sent to computer assistant
 # from home assistant using MQTT.
 
+
+import time
+import datetime
+import json
+import sys
+import logging
+from platform import uname
 from PySide2.QtWidgets import QApplication
 from PySide2.QtGui import QIcon
 from PySide2.QtCore import QTimer, QThread, Slot
@@ -15,12 +22,7 @@ import mouse
 from PIL import ImageGrab
 import paho.mqtt.client as mqtt
 from psutil import WINDOWS, LINUX
-from platform import uname
-import time
-import datetime
-import json
-import sys
-import logging
+
 from constants import (
     APP_NAME,
     HA_TOPIC,
