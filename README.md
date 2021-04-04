@@ -1,6 +1,8 @@
 # Computer Assistant
 
+<<<<<<< HEAD
 [![Current Version](https://img.shields.io/badge/version-1.0.7-green.svg)]
+=======
 
 ## Introduction
 
