@@ -12,7 +12,6 @@ import time
 import datetime
 import json
 import sys
-import logging
 from platform import uname
 from PySide2.QtWidgets import QApplication
 from PySide2.QtGui import QIcon
@@ -255,7 +254,6 @@ def notify(title, message):
 
 
 def on_cmd_notify(client, userdata, msg):
-    logging.debug("Notification received")
     notification = json.loads(msg.payload)
     notify(notification["title"], notification["message"])
 
@@ -266,10 +264,8 @@ def clean_up():
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG,
-                        format='%(asctime)s - %(levelname)s - %(message)s')
-
-    logging.debug("Started")
+    # logging.basicConfig(level=logging.DEBUG,
+    #                    format='%(asctime)s - %(levelname)s - %(message)s')
 
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
@@ -283,8 +279,6 @@ if __name__ == "__main__":
 
     tray_icon.exit_menu.connect(clean_up)
 
-    logging.debug("systray set up")
-
     # load settings.json
     try:
         settings = JSONSettings(CA_SETTINGS, DEFAULT_SETTINGS)
@@ -293,8 +287,6 @@ if __name__ == "__main__":
                    "Unable to load settings even default settings!")
     except json.JSONDecodeError:
         notify("Invalid JSON", "The settings file is not valid JSON")
-
-    logging.debug("Settings loaded")
 
     dialog = SettingsDialog("Computer Assistant", CA_ICON, settings)
 
@@ -305,7 +297,6 @@ if __name__ == "__main__":
     dialog.mqtt_password.setText(str(settings.mqtt_password))
 
     tray_icon.open_settings.connect(lambda: dialog.show())
-    logging.debug("Settings dialog configured")
 
     # get broker details
     broker = settings.mqtt_host
