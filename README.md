@@ -1,5 +1,7 @@
 # Computer Assistant ![Current Version](https://img.shields.io/badge/version-0.1.0-blue.svg)
 
+![(https://img.shields.io/github/pipenv/locked/python-version/malcolmcdixon/computerassistant)]
+
 ## Introduction
 
 This Python project integrates into Home Assistant automatically using MQTT discovery to provide an entity to show whether the computer is Online, Active or Offline.
