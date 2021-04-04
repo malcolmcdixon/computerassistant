@@ -1,6 +1,4 @@
-# Computer Assistant
-
-# ![Current Version](https://img.shields.io/badge/version-0.1.0-green.svg)
+# Computer Assistant ![Current Version](https://img.shields.io/badge/version-0.1.0-blue.svg)
 
 ## Introduction
 
