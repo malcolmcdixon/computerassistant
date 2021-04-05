@@ -49,7 +49,7 @@ When Computer Assistant connects to the MQTT broker it will publish a config mes
 <img src="./github_images/mqtt-integration.png" alt="MQTT Integration of Computer Assistant" height="256">
 <p>
 
-Add the device to Lovelace
+Add the device to Lovelace.
 
 ### Add a MQTT Camera
 
@@ -84,7 +84,7 @@ The last active time is displayed and the currently active window if applicable.
 
 ### Camera
 
-Selecting the camera is just like any other camera feed it will display a larger image in its own window.
+Selecting the camera is just like any other camera feed, it will display a larger image in its own window.
 
 ### Commands
 
@@ -109,10 +109,17 @@ payload:
 
 <img src="./github_images/notification.png" alt="An example notification">
 
-## Support
-
 ## Roadmap
 
-## Author
+This project was initiated mainly as a programming exercise to test my recently gained knowledge of Python, to learn Qt and to send notifications to my computer from Home Assistant automations in Node-Red.
+
+This is my first public repository on Github, the code is far from perfect but works!
+
+I don't have any particular plans for developing other features other than automating the MQTT Camera configuration, but I'd like to have it work on Linux too. If there's a particular killer feature you'd like then complete a [feature request](https://github.com/malcolmcdixon/computerassistant/issues/new?template=feature_request.md).
+
+## Support
+
+I will try to help anyone having issues installing, configuring and using Computer Assistant where possible.
+To obtain support please complete a [bug report](https://github.com/malcolmcdixon/computerassistant/issues/new?template=bug_report.md).
 
 ## License
