@@ -1,18 +1,14 @@
 # Computer Assistant ![Current Version](https://img.shields.io/badge/version-0.1.0-blue.svg) ![Language](https://img.shields.io/badge/Python-3.8.8-blue) ![Mqtt Logo](https://img.shields.io/static/v1?label=&message=MQTT&color=blueviolet&logo=eclipse-mosquitto)
 
-<p align="center">
-  <img src="./images/computer-assistant-icon.png" alt="Computer Assistant Screenshot" height=128>
-</p>
+<img src="./images/computer-assistant-icon.png" alt="Computer Assistant Screenshot" height="128" style="display: block;margin: 0 auto">
 
 ## Introduction
 
-This project integrates into [![Home Assistant Logo](https://img.shields.io/static/v1?label=&message=Home%20Assistant&color=41bdf5&logo=home-assistant&logoColor=white)](https://www.home-assistant.io/) automatically using **MQTT Discovery** to provide an entity to show whether your computer (\*\*\_Windows only**\*) is Online, Active or Offline.  
-You can add an **MQTT Camera\*\* entity by updating your \_config.yaml\* file, so the currently active window is displayed in your Lovelace UI.  
+This project integrates into [![Home Assistant Logo](https://img.shields.io/static/v1?label=&message=Home%20Assistant&color=41bdf5&logo=home-assistant&logoColor=white)](https://www.home-assistant.io/) automatically using **MQTT Discovery** to provide an entity to show whether your computer (**_Windows only_**) is Online, Active or Offline.  
+You can add an **MQTT Camera** entity by updating your _configuration.yaml_ file, so the currently active window is displayed in your Lovelace UI.  
 Commands can be published via MQTT to retrieve a current snapshot of the active window or to send a notification that will pop up using the Windows Notification system.
 
-<p align="center">
-  <img src="./github_images/computer-assistant-snapshot.png" alt="Computer Assistant Screenshot" height=512>
-</p>
+<img src="./github_images/computer-assistant-snapshot.png" alt="Computer Assistant Screenshot" height="512" style="display: block;margin: 0 auto">
 
 ## Installation
 
@@ -24,11 +20,12 @@ Alternatively, [clone or download](https://docs.github.com/en/github/getting-sta
 
 ## Configuration
 
-Ensure you have the [MQTT Integration](https://www.home-assistant.io/integrations/mqtt) added in Home Assistant.  
-Launch computerassistant.exe or if running from source code
+Ensure you have the [MQTT Integration](https://www.home-assistant.io/integrations/mqtt) added in Home Assistant.
+
+Launch computerassistant.exe or if running from source code enter:  
 `$ python ca.py`
 
-The program will appear in the notification area <img src="./images/computer-assistant-icon.png" alt="Computer Assistant Logo" height=32>
+The program will appear in the notification area <img src="./images/computer-assistant-icon.png" alt="Computer Assistant Logo" height="24">
 
 Select the <img src="./github_images/settings_menu.png" alt="Settings Menu"> menu item from the context menu and enter your MQTT server details and credentials in the form.
 
@@ -44,8 +41,67 @@ Enter the _username_ and _password_ to connect to your broker.
 
 When Computer Assistant connects to the MQTT broker it will publish a config message on topic _homeassistant/sensor/computer-assistant/{your-computer-name}/config_, this will create the device automagically in Home Assistant.
 
-<img src="./github_images/mqtt-integration.png" alt="MQTT Integration of Computer Assistant" height=256>
+<img src="./github_images/mqtt-integration.png" alt="MQTT Integration of Computer Assistant" height="256" style="display: block;margin: 0 auto">
+
+Add the device to Lovelace
+
+### Add a MQTT Camera
+
+Follow the [MQTT Camera](https://www.home-assistant.io/integrations/camera.mqtt/) instructions to configure the _virtual_ camera in your _configuration.yaml_.  
+**Example**
+
+```yaml
+camera:
+  - platform: mqtt
+    topic: computer-assistant/sensor/Workstation/screenshot
+    name: Workstation Active Window
+    unique_id: Workstation
+```
+
+**NOTE:** Replace _Workstation_ with your computer's name.  
+This will create a camera entity that you can then add to Lovelace.
+
 ## How to Use
+
+### Sensor
+
+In Lovelace UI select the Computer Assistant Sensor.
+
+<img src="./github_images/computer-assistant-sensor.png" alt="Computer Assistant Sensor">
+
+This will show the sensor details.
+
+<img src="./github_images/computer-assistant-sensor-detail.png" alt="Computer Assistant Sensor Details">
+
+You can see the history of when the computer was offline, online and active.  
+The last active time is displayed and the currently active window if applicable.
+
+### Camera
+
+Selecting the camera is just like any other camera feed it will display a larger image in its own window.
+
+### Commands
+
+There are only 2 commands, screenshot and notify, to use these publish a message via MQTT.
+
+#### Screenshot
+
+The screenshot command will tell Computer Assistant to send an updated image of the active window.  
+topic:  
+_computer-assistant/sensor/{your-computer-name}/cmd/screenshot_
+
+#### Notify
+
+The notify command will create a notification in the Windows Noficiation
+topic:  
+_computer-assistant/sensor/{your-computer-name}/cmd/notify_  
+payload:
+
+```json
+{ "title": "Test", "message": "A test" }
+```
+
+<img src="./github_images/notification.png" alt="An example notification">
 
 ## Support
 
