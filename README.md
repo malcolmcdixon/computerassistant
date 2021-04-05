@@ -6,8 +6,8 @@
 
 ## Introduction
 
-This project integrates into [![Home Assistant Logo](https://img.shields.io/static/v1?label=&message=Home%20Assistant&color=41bdf5&logo=home-assistant&logoColor=white)](https://www.home-assistant.io/){:target="_blank"} automatically using **MQTT Discovery** to provide an entity to show whether your computer (\*\*\_Windows only_**) is Online, Active or Offline.  
-You can add an **MQTT Camera\*\* entity by updating your _config.yaml_ file, so the currently active window is displayed in your Lovelace UI.  
+This project integrates into [![Home Assistant Logo](https://img.shields.io/static/v1?label=&message=Home%20Assistant&color=41bdf5&logo=home-assistant&logoColor=white)](https://www.home-assistant.io/) automatically using **MQTT Discovery** to provide an entity to show whether your computer (\*\*\_Windows only***) is Online, Active or Offline.  
+You can add an **MQTT Camera\*\* entity by updating your \_config.yaml* file, so the currently active window is displayed in your Lovelace UI.  
 Commands can be published via MQTT to retrieve a current snapshot of the active window or to send a notification that will pop up using the Windows Notification system.
 
 <p align="center">
@@ -16,10 +16,10 @@ Commands can be published via MQTT to retrieve a current snapshot of the active 
 
 ## Installation
 
-The simplest method to get started is to copy computerassistant.exe from [releases](https://github.com/malcolmcdixon/computerassistant/releases) to any folder.  
+The simplest method to get started is to copy computerassistant.exe from <a href="https://github.com/malcolmcdixon/computerassistant/releases" target="_blank">releases</a> to any folder.  
 **Suggestion**: add to the [Start-up](https://www.lifewire.com/add-startup-programs-on-windows-10-4801897){:target="\_blank"} folder.
 
-Alternatively, [clone or download](https://docs.github.com/en/github/getting-started-with-github/getting-changes-from-a-remote-repository#cloning-a-repository){:target="\_blank"} the source code, preferably into a [virtual environment](https://docs.python.org/3/library/venv.html){:target="\_blank"} and run  
+Alternatively, <a href="https://docs.github.com/en/github/getting-started-with-github/getting-changes-from-a-remote-repository#cloning-a-repository" target="_blank">clone or download</a> the source code, preferably into a <a href="https://docs.python.org/3/library/venv.html" target="_blank">virtual environment</a> and run  
 `$ pip install -r requirements.txt`  
 `$ python ca.py`
 
