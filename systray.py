@@ -17,13 +17,13 @@ from constants import (
 class SystemTrayIcon(QSystemTrayIcon):
     open_settings = Signal()
     exit_menu = Signal()
-    message_clicked = Signal()
 
     def __init__(self, icon):
         super().__init__(icon)
         if self.isSystemTrayAvailable():
             # create a menu for system tray icon
             menu = QMenu()
+
             # add Settings menu option with bold font
             action = menu.addAction("Settings", self.settings)
             action.setIcon(QIcon(CA_SETTINGS_ICON))
