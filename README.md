@@ -6,8 +6,8 @@
 
 ## Introduction
 
-This project integrates into [![Home Assistant Logo](https://img.shields.io/static/v1?label=&message=Home%20Assistant&color=41bdf5&logo=home-assistant&logoColor=white)](https://www.home-assistant.io/) automagically using **MQTT Discovery** to provide an entity to show whether your computer (**_Windows only_**) is Online, Active or Offline.  
-You can add an **MQTT Camera** entity by updating your _configuration.yaml_ file, so the currently active window is displayed in your Lovelace UI.  
+This project integrates into [![Home Assistant Logo](https://img.shields.io/static/v1?label=&message=Home%20Assistant&color=41bdf5&logo=home-assistant&logoColor=white)](https://www.home-assistant.io/) automagically using **MQTT Discovery** to provide an entity to show whether your computer (**_Windows only_**) is Offline, Online or Active.  
+You can add a **MQTT Camera** entity by updating your _configuration.yaml_ file, so the currently active window is displayed in your Lovelace UI.  
 Commands can be published via MQTT to retrieve a current snapshot of the active window or to send a notification that will pop up using the Windows Notification system.
 
 <p align=center>
@@ -115,11 +115,9 @@ This project was initiated mainly as a programming exercise to test my recently 
 
 This is my first public repository on Github, the code is far from perfect but works!
 
-I don't have any particular plans for developing other features other than automating the MQTT Camera configuration, but I'd like to have it work on Linux too. If there's a particular killer feature you'd like then complete a [feature request](https://github.com/malcolmcdixon/computerassistant/issues/new?template=feature_request.md).
+I don't have any particular plans for developing other features other than automating the MQTT Camera configuration, but I'd like to have it work on Linux too. However, if there's a particular killer feature you'd like then complete a [feature request](https://github.com/malcolmcdixon/computerassistant/issues/new?template=feature_request.md).
 
 ## Support
 
 I will try to help anyone having issues installing, configuring and using Computer Assistant where possible.
 To obtain support please complete a [bug report](https://github.com/malcolmcdixon/computerassistant/issues/new?template=bug_report.md).
-
-## License
