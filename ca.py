@@ -12,6 +12,7 @@ import time
 import datetime
 import json
 import sys
+import logging
 from platform import uname
 from PySide2.QtWidgets import QApplication
 from PySide2.QtGui import QIcon
@@ -263,14 +264,29 @@ def clean_up():
     app.exit()
 
 
+@Slot()
+def dialog_saved():
+    logging.debug("Settings just saved")
+
+
+@Slot()
+def message_clicked():
+    logging.debug("Message clicked")
+
+
+@Slot()
+def menu_item_clicked(action):
+    logging.debug(f"you triggered {action.iconText()}")
+
+
 if __name__ == "__main__":
-    # logging.basicConfig(level=logging.DEBUG,
-    #                    format='%(asctime)s - %(levelname)s - %(message)s')
+    logging.basicConfig(level=logging.DEBUG,
+                        format='%(asctime)s - %(levelname)s - %(message)s')
 
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
 
-    QThread.currentThread().setObjectName(APP_NAME)
+    QThread.currentThread().setObjectName("Computer Assistant")
 
     icon_image = QIcon(CA_ICON)
     tray_icon = SystemTrayIcon(icon_image)
@@ -278,6 +294,8 @@ if __name__ == "__main__":
     tray_icon.show()
 
     tray_icon.exit_menu.connect(clean_up)
+    tray_icon.messageClicked.connect(message_clicked)
+    tray_icon.contextMenu().triggered.connect(menu_item_clicked)
 
     # load settings.json
     try:
@@ -295,6 +313,8 @@ if __name__ == "__main__":
     dialog.mqtt_port.setText(str(settings.mqtt_port))
     dialog.mqtt_username.setText(str(settings.mqtt_username))
     dialog.mqtt_password.setText(str(settings.mqtt_password))
+
+    dialog.accepted.connect(dialog_saved)
 
     tray_icon.open_settings.connect(lambda: dialog.show())
 
