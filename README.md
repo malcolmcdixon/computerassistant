@@ -92,13 +92,13 @@ There are only 2 commands, screenshot and notify, to use these publish a message
 
 #### Screenshot
 
-The screenshot command will tell Computer Assistant to send an updated image of the active window.  
+The screenshot command will instruct Computer Assistant to send an updated image of the active window.  
 topic:  
 _computer-assistant/sensor/{your-computer-name}/cmd/screenshot_
 
 #### Notify
 
-The notify command will create a notification in the Windows Noficiation
+The notify command will create a notification in the Windows Notification
 topic:  
 _computer-assistant/sensor/{your-computer-name}/cmd/notify_  
 payload:
