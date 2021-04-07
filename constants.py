@@ -36,7 +36,8 @@ DEFAULT_SETTINGS = """{
 
 # RESOURCES
 # Resource Base Path
-RESOURCE_BASE_PATH = getattr(sys, '_MEIPASS', os.getcwd())
+SETTINGS_PATH = os.getcwd()
+RESOURCE_BASE_PATH = getattr(sys, '_MEIPASS', SETTINGS_PATH)
 
 # ICONS
 # Computer Assistant Icon
@@ -48,4 +49,4 @@ CA_SETTINGS_ICON = f"{RESOURCE_BASE_PATH}/images/settings_blue_128x128.png"
 
 # FILES
 # Settings file
-CA_SETTINGS = f"{RESOURCE_BASE_PATH}/settings.json"
+CA_SETTINGS = f"{SETTINGS_PATH}/settings.json"
