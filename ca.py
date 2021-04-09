@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # ca.py
-# written by m.c.dixon 2020
+# written by Malcolm Dixon 2020
 # computer assistant is a program that configures a device in home assistant
 # so that the HA user can see activity on computers and see a screenshot of
 # the last active window. Notifications can be sent to computer assistant
@@ -276,7 +276,13 @@ def message_clicked():
 
 @Slot()
 def menu_item_clicked(action):
-    logging.debug(f"you triggered {action.iconText()}")
+    menu_item = action.iconText()
+    if menu_item == "Settings":
+        logging.debug("you triggered Settings")
+        dialog.show()
+    elif menu_item == "Exit":
+        logging.debug("you triggered Exit")
+        app.exit()
 
 
 if __name__ == "__main__":
@@ -286,14 +292,14 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
 
-    QThread.currentThread().setObjectName("Computer Assistant")
+    QThread.currentThread().setObjectName(APP_NAME)
 
     icon_image = QIcon(CA_ICON)
     tray_icon = SystemTrayIcon(icon_image)
-    tray_icon.setToolTip("Computer Assistant")
+    tray_icon.setToolTip(APP_NAME)
     tray_icon.show()
 
-    tray_icon.exit_menu.connect(clean_up)
+    # tray_icon.exit_menu.connect(clean_up)
     tray_icon.messageClicked.connect(message_clicked)
     tray_icon.contextMenu().triggered.connect(menu_item_clicked)
 
@@ -306,7 +312,7 @@ if __name__ == "__main__":
     except json.JSONDecodeError:
         notify("Invalid JSON", "The settings file is not valid JSON")
 
-    dialog = SettingsDialog("Computer Assistant", CA_ICON, settings)
+    dialog = SettingsDialog(APP_NAME, CA_ICON, settings)
 
     # load mqtt settings into dialog
     dialog.mqtt_host.setText(str(settings.mqtt_host))
@@ -316,7 +322,7 @@ if __name__ == "__main__":
 
     dialog.accepted.connect(dialog_saved)
 
-    tray_icon.open_settings.connect(lambda: dialog.show())
+    #tray_icon.open_settings.connect(lambda: dialog.show())
 
     # get broker details
     broker = settings.mqtt_host

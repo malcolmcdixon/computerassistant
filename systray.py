@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # systray.py
-# written by m.c.dixon 2020
+# written by Malcolm Dixon 2020
 # class to create a system tray icon for computer assistant
 
 from PySide2.QtWidgets import QApplication, QMenu, QSystemTrayIcon
@@ -15,8 +15,6 @@ from constants import (
 
 
 class SystemTrayIcon(QSystemTrayIcon):
-    open_settings = Signal()
-    exit_menu = Signal()
 
     def __init__(self, icon):
         super().__init__(icon)
@@ -25,7 +23,7 @@ class SystemTrayIcon(QSystemTrayIcon):
             menu = QMenu()
 
             # add Settings menu option with bold font
-            action = menu.addAction("Settings", self.settings)
+            action = menu.addAction("Settings")
             action.setIcon(QIcon(CA_SETTINGS_ICON))
             font = action.font()
             font.setBold(True)
@@ -33,13 +31,7 @@ class SystemTrayIcon(QSystemTrayIcon):
             # add a menu separator
             menu.addSeparator()
             # add Exit menu option
-            action = menu.addAction("Exit", self.exit)
+            action = menu.addAction("Exit")
             action.setIcon(QIcon(CA_CLOSE_ICON))
             # add menu to system tray icon
             self.setContextMenu(menu)
-
-    def settings(self):
-        self.open_settings.emit()
-
-    def exit(self):
-        self.exit_menu.emit()

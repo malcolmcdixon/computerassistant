@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # mqtt.py
-# written by m.c.dixon 2020
+# written by Malcolm Dixon 2020
 # classes for working with paho mqtt library
 
 
