@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 # constants.py
-# written by Malcolm Dixon 2020
-# constants used in computer assistant
+# written by m.c.dixon 2020
+# Constants used in computer assistant
 
 import os
 import sys
@@ -18,12 +18,11 @@ class Status(Enum):
 
 
 # Application Name
-APP_NAME = "Computer Assistant"
-TOPIC_APP_NAME = "computer-assistant"
+APP_NAME = "computer-assistant"
 
 # MQTT Topics
-HA_TOPIC = f"homeassistant/sensor/{TOPIC_APP_NAME}/"
-BASE_TOPIC = f"{TOPIC_APP_NAME}/sensor/"
+HA_TOPIC = f"homeassistant/sensor/{APP_NAME}/"
+BASE_TOPIC = f"{APP_NAME}/sensor/"
 
 MQTT_TIMEOUT = 30
 
