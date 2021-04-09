@@ -166,12 +166,15 @@ def on_connect(client, userdata, flags, rc):
     if rc == 0:
         # 0: successful
         client.connected = True
+        notify("MQTT Connection",
+               f"Connected to MQTT broker @ {broker}:{port}")
     else:
         # 1: incorrect protocol version
         # 2: invalid client identifier
         # 3: server unavailable
         # 4: bad username or password
         # 5: not authorised
+        logging.debug(f"rc = {rc}")
         client.connected = False
 
 
@@ -196,7 +199,7 @@ def on_subscribe(client, userdata, mid, granted_qos):
 
 def mqtt_connect(client, broker, port):
     # connect to the MQTT broker
-    client.loop_start()
+    # client.loop_start()
     try:
         client.connected = False
         client.connect(broker, int(port), 60)
@@ -206,18 +209,18 @@ def mqtt_connect(client, broker, port):
             time.sleep(1)
             waiting += 1
             if waiting == MQTT_TIMEOUT:
-                print("MQTT connection timeout, cannot connect")
-                client.loop_stop()
-                sys.exit()
+                raise TimeoutError
+                # client.loop_stop()
     except ConnectionRefusedError:
-        print("MQTT broker refused connection or is not available")
-        client.loop_stop()
-        sys.exit()
+        return
+        # client.loop_stop()
     except ValueError:
         # invalid host
+        # client.loop_stop()
         return
     except TimeoutError:
-        notify("MQTT", "A TimeOutError occurred while connecting to broker")
+        # client.loop_stop()
+        return
 
 
 def do_update():
@@ -261,6 +264,13 @@ def on_cmd_notify(client, userdata, msg):
 @Slot()
 def dialog_saved():
     logging.debug("Settings just saved")
+    # update broker details
+    broker = dialog.mqtt_host.text()
+    port = dialog.mqtt_port.text()
+    username = dialog.mqtt_username.text()
+    password = dialog.mqtt_password.text()
+    mqttc.username_pw_set(username, password)
+    mqtt_connect(mqttc, broker, port)
 
 
 @Slot()
@@ -316,53 +326,57 @@ if __name__ == "__main__":
 
     dialog.accepted.connect(dialog_saved)
 
-    #tray_icon.open_settings.connect(lambda: dialog.show())
-
     # get broker details
     broker = settings.mqtt_host
     port = settings.mqtt_port
     username = settings.mqtt_username
     password = settings.mqtt_password
-    # TODO if settings not valid then pointless trying to connect
+
+    # create an instance of the ComputerAssistant class with the computer's name
     ca = ComputerAssistant(uname().node)
-    # init the mqtt client
+
+    # create and configure the mqtt client
     ca.client = mqtt.Client()
     mqttc = ca.client
 
+    # mqtt callbacks
     mqttc.on_connect = on_connect
     mqttc.on_message = on_message
     mqttc.on_publish = on_publish
     mqttc.on_subscribe = on_subscribe
     mqttc.on_disconnect = on_disconnect
     mqttc.username_pw_set(username, password)
+    # add on message callback for screenshot command
+    mqttc.message_callback_add(
+        f'{ca.cmd_topic}/screenshot', ca.on_cmd_screenshot)
+    # add on message call back for notify command
+    mqttc.message_callback_add(f'{ca.cmd_topic}/notify', on_cmd_notify)
+
     # set the LWT, so if disconnected abruptly the state is set to Offline
     mqttc.will_set(ca.state_topic, Status.OFFLINE.name.title(),
                    qos=1, retain=False)
 
     # connect to mqtt broker
     mqtt_connect(mqttc, broker, port)
-    notify("MQTT Connection", f"Connected to MQTT broker @ {broker}:{port}")
 
-    # publish device configuration to home assistant
-    ca.publish_ha_config()
+    if not mqttc.connected:
+        dialog.show()
+    else:
+        # publish device configuration to home assistant
+        ca.publish_ha_config()
 
-    # publish online status
-    mqttc.publish(ca.status_topic, "online")
-    mqttc.publish(ca.state_topic, ca.state.name.title())
+        # publish online status
+        mqttc.publish(ca.status_topic, "online")
+        mqttc.publish(ca.state_topic, ca.state.name.title())
 
-    # add on message callback for screenshot command
-    mqttc.message_callback_add(
-        f'{ca.cmd_topic}/screenshot', ca.on_cmd_screenshot)
-    # add on message call back for notify command
-    mqttc.message_callback_add(f'{ca.cmd_topic}/notify', on_cmd_notify)
-    # subscribe to cmd topic
-    result = mqttc.subscribe(ca.subscribe_topic, 1)
-    if result[0] != 0:
-        notify("No Commands",
-               "Could not subscribe, no command function available")
+        # subscribe to cmd topic
+        result = mqttc.subscribe(ca.subscribe_topic, 1)
+        if result[0] != 0:
+            notify("No Commands",
+                   "Could not subscribe, no command function available")
 
-    frequency = QTimer()
-    frequency.timeout.connect(do_update)
-    frequency.start(ca.freq)
+        frequency = QTimer()
+        frequency.timeout.connect(do_update)
+        frequency.start(ca.freq)
 
     sys.exit(app.exec_())
