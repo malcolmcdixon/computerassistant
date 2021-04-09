@@ -132,7 +132,7 @@ class JSONSettings:
     def save(self):
         if self.loaded:
             # update setting values in dictionary from attribute values
-            for key, value in self._dict.items():
+            for key in self._dict.keys():
                 self._dict[key] = getattr(self, key)
             json.dump(self._dict, open(self._settings_file, 'w'))
 

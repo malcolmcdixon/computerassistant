@@ -25,8 +25,6 @@ TOPIC_APP_NAME = (APP_NAME.lower()).replace(" ", "-")
 HA_TOPIC = f"homeassistant/sensor/{TOPIC_APP_NAME}/"
 BASE_TOPIC = f"{TOPIC_APP_NAME}/sensor/"
 
-print(HA_TOPIC)
-
 MQTT_TIMEOUT = 30
 
 # Initial settings

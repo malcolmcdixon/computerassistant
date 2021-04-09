@@ -30,7 +30,6 @@ from constants import (
     MQTT_TIMEOUT,
     Status,
     DEFAULT_SETTINGS,
-    RESOURCE_BASE_PATH,
     CA_ICON,
     CA_SETTINGS
 )
@@ -260,11 +259,6 @@ def on_cmd_notify(client, userdata, msg):
 
 
 @Slot()
-def clean_up():
-    app.exit()
-
-
-@Slot()
 def dialog_saved():
     logging.debug("Settings just saved")
 
@@ -278,10 +272,8 @@ def message_clicked():
 def menu_item_clicked(action):
     menu_item = action.iconText()
     if menu_item == "Settings":
-        logging.debug("you triggered Settings")
         dialog.show()
     elif menu_item == "Exit":
-        logging.debug("you triggered Exit")
         app.exit()
 
 
@@ -289,19 +281,20 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG,
                         format='%(asctime)s - %(levelname)s - %(message)s')
 
+    # create qt application
     app = QApplication(sys.argv)
+    # ensure app does not close when settings window closes
     app.setQuitOnLastWindowClosed(False)
 
-    QThread.currentThread().setObjectName(APP_NAME)
-
+    # create notification area ui
     icon_image = QIcon(CA_ICON)
     tray_icon = SystemTrayIcon(icon_image)
     tray_icon.setToolTip(APP_NAME)
-    tray_icon.show()
-
     # tray_icon.exit_menu.connect(clean_up)
     tray_icon.messageClicked.connect(message_clicked)
+    # connect triggered signal of context menu to menu_item_clicked function
     tray_icon.contextMenu().triggered.connect(menu_item_clicked)
+    tray_icon.show()
 
     # load settings.json
     try:
@@ -312,6 +305,7 @@ if __name__ == "__main__":
     except json.JSONDecodeError:
         notify("Invalid JSON", "The settings file is not valid JSON")
 
+    # create settings dialog
     dialog = SettingsDialog(APP_NAME, CA_ICON, settings)
 
     # load mqtt settings into dialog
