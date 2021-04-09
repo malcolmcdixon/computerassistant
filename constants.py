@@ -18,11 +18,14 @@ class Status(Enum):
 
 
 # Application Name
-APP_NAME = "computer-assistant"
+APP_NAME = "Computer Assistant"
+TOPIC_APP_NAME = (APP_NAME.lower()).replace(" ", "-")
 
 # MQTT Topics
-HA_TOPIC = f"homeassistant/sensor/{APP_NAME}/"
-BASE_TOPIC = f"{APP_NAME}/sensor/"
+HA_TOPIC = f"homeassistant/sensor/{TOPIC_APP_NAME}/"
+BASE_TOPIC = f"{TOPIC_APP_NAME}/sensor/"
+
+print(HA_TOPIC)
 
 MQTT_TIMEOUT = 30
 
