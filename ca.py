@@ -16,7 +16,7 @@ import logging
 from platform import uname
 from PySide2.QtWidgets import QApplication
 from PySide2.QtGui import QIcon
-from PySide2.QtCore import QTimer, QThread, Slot
+from PySide2.QtCore import QTimer, Slot
 import keyboard
 import mouse
 from PIL import ImageGrab
@@ -300,7 +300,6 @@ if __name__ == "__main__":
     icon_image = QIcon(CA_ICON)
     tray_icon = SystemTrayIcon(icon_image)
     tray_icon.setToolTip(APP_NAME)
-    # tray_icon.exit_menu.connect(clean_up)
     tray_icon.messageClicked.connect(message_clicked)
     # connect triggered signal of context menu to menu_item_clicked function
     tray_icon.contextMenu().triggered.connect(menu_item_clicked)

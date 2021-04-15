@@ -4,9 +4,8 @@
 # written by Malcolm Dixon 2020
 # class to create a system tray icon for computer assistant
 
-from PySide2.QtWidgets import QApplication, QMenu, QSystemTrayIcon
+from PySide2.QtWidgets import QMenu, QSystemTrayIcon
 from PySide2.QtGui import QIcon
-from PySide2.QtCore import Signal
 
 from constants import (
     CA_SETTINGS_ICON,
