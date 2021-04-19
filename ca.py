@@ -16,11 +16,10 @@ import logging
 from platform import uname
 from PySide2.QtWidgets import QApplication
 from PySide2.QtGui import QIcon
-from PySide2.QtCore import QTimer, Slot
+from PySide2.QtCore import QTimer, Slot, QThread
 import keyboard
 import mouse
 from PIL import ImageGrab
-import paho.mqtt.client as mqtt
 from psutil import WINDOWS, LINUX
 
 from constants import (
@@ -37,6 +36,7 @@ from settings import JSONSettings, SettingsDialog
 from systray import SystemTrayIcon
 from microsoft import windows
 from imageprocess import convert
+from mqtt import Mqtt, ConnectionStatus
 
 
 class ComputerAssistant:
@@ -44,13 +44,13 @@ class ComputerAssistant:
         self._ltu = datetime.datetime.now()
         self._ptu = self._ltu
         # frequency to check for activity and active timeout
-        self._freq = 15
+        self._freq = 15000
         self._active_timeout = 120
         # get computer name to use as unique id and within mqtt topics
         self.computer_name = computer_name
 
         # set up mqtt and topics
-        self.client = None
+        #self.client = None
         self.base_topic = BASE_TOPIC + self.computer_name
         self.screenshot_topic = self.base_topic + "/screenshot"
         self.status_topic = self.base_topic + "/status"
@@ -162,90 +162,84 @@ def screenshot() -> bytearray:
     return convert.to_byte_array(img)
 
 
-def on_connect(client, userdata, flags, rc):
+@Slot()
+def mqtt_connecting():
+    print("MQTT connecting...")
+
+
+@Slot()
+def mqtt_connected():
+    notify("MQTT Connection",
+           f"Connected to MQTT broker @ {mqtt.host}:{mqtt.port}")
+
+    # publish device configuration to home assistant
+    # ca.publish_ha_config()
+
+    # publish online status
+    mqtt.client.publish(ca.status_topic, "online")
+    mqtt.client.publish(ca.state_topic, ca.state.name.title())
+
+    # subscribe to cmd topic
+    result = mqtt.client.subscribe(ca.subscribe_topic, 1)
+    if result[0] != 0:
+        notify("No Commands",
+               "Could not subscribe, no command function available")
+
+
+@Slot()
+def mqtt_connection_error(err):
+    print(f"An error occurred:{err}")
+
+
+@Slot()
+def mqtt_disconnected(rc):
     if rc == 0:
-        # 0: successful
-        client.connected = True
-        notify("MQTT Connection",
-               f"Connected to MQTT broker @ {broker}:{port}")
+        print("Disconnected")
     else:
-        # 1: incorrect protocol version
-        # 2: invalid client identifier
-        # 3: server unavailable
-        # 4: bad username or password
-        # 5: not authorised
-        logging.debug(f"rc = {rc}")
-        client.connected = False
+        print("Unexpected disconnection...")
 
 
-def on_disconnect(client, userdata, rc):
-    client.connected = False
-    client.loop_stop()
+@Slot()
+def mqtt_reconnecting(reconnect_attempt):
+    print(f"reconnecting...{reconnect_attempt} time(s)")
 
 
-def on_message(client, userdata, msg):
-    # print("Message received:", msg.payload)
-    pass
-
-
-def on_publish(client, userdata, result):
-    # print("publish result:", result)
-    pass
-
-
-def on_subscribe(client, userdata, mid, granted_qos):
-    pass
-
-
-def mqtt_connect(client, broker, port):
-    # connect to the MQTT broker
-    # client.loop_start()
-    try:
-        client.connected = False
-        client.connect(broker, int(port), 60)
-        # wait for successful connection
-        waiting = 0
-        while not client.connected:
-            time.sleep(1)
-            waiting += 1
-            if waiting == MQTT_TIMEOUT:
-                raise TimeoutError
-                # client.loop_stop()
-    except ConnectionRefusedError:
-        return
-        # client.loop_stop()
-    except ValueError:
-        # invalid host
-        # client.loop_stop()
-        return
-    except TimeoutError:
-        # client.loop_stop()
-        return
+@Slot()
+def mqtt_reconnect_failure():
+    print("Cannot reconnect...please check settings")
 
 
 def do_update():
-    if not mqttc.connected:
-        # disconnected from mqtt broker so connect again
-        mqtt_connect(mqttc, broker, port)
+    #print("do update loop")
+    state = mqtt.state
+    #print(f"Connection status: {state}")
+    if state == ConnectionStatus.CONNECTION_ERROR:
+        print("Connection Error...")
+        return
+
+    if state != ConnectionStatus.CONNECTED:
+        return
+
+    print("Connected so do some work...")
 
     if ca.can_trigger():
         ca.update_previous_time()
         if ca.state != Status.ACTIVE:
             ca.state = Status.ACTIVE
-            mqttc.publish(ca.state_topic, ca.state.name.title())
+            mqtt.client.publish(ca.state_topic, ca.state.name.title())
 
         window_title = get_window_title()
         current_window = json.dumps(window_title)
-        mqttc.publish(ca.attribute_topic, '{"Last Active At":"' +
-                      ca.last_time_used.strftime("%d/%m/%Y %H:%M:%S") +
-                      '","Current Window":' + current_window + '}')
+        mqtt.client.publish(ca.attribute_topic, '{"Last Active At":"' +
+                            ca.last_time_used.strftime("%d/%m/%Y %H:%M:%S") +
+                            '","Current Window":' + current_window + '}')
         # TODO: check have valid screenshot else send screen grab error image
         image = screenshot()
         if image is not None:
-            mqttc.publish(ca.screenshot_topic, image)
+            mqtt.client.publish(ca.screenshot_topic, image)
     elif ca.state == Status.ACTIVE and ca.is_idle():
         ca.state = Status.ONLINE
-        mqttc.publish(ca.state_topic, ca.state.name.title())
+        mqtt.client.publish(ca.state_topic, ca.state.name.title())
 
 
 def notify(title, message):
@@ -265,12 +259,10 @@ def on_cmd_notify(client, userdata, msg):
 def dialog_saved():
     logging.debug("Settings just saved")
     # update broker details
-    broker = dialog.mqtt_host.text()
+    host = dialog.mqtt_host.text()
     port = dialog.mqtt_port.text()
     username = dialog.mqtt_username.text()
     password = dialog.mqtt_password.text()
-    mqttc.username_pw_set(username, password)
-    mqtt_connect(mqttc, broker, port)
 
 
 @Slot()
@@ -284,6 +276,9 @@ def menu_item_clicked(action):
     if menu_item == "Settings":
         dialog.show()
     elif menu_item == "Exit":
+        mqtt.enabled = False
+        mqtt_thread.quit()
+        mqtt_thread.wait()
         app.exit()
 
 
@@ -325,57 +320,46 @@ if __name__ == "__main__":
 
     dialog.accepted.connect(dialog_saved)
 
-    # get broker details
-    broker = settings.mqtt_host
-    port = settings.mqtt_port
-    username = settings.mqtt_username
-    password = settings.mqtt_password
-
     # create an instance of the ComputerAssistant class with the computer's name
     ca = ComputerAssistant(uname().node)
 
     # create and configure the mqtt client
-    ca.client = mqtt.Client()
-    mqttc = ca.client
+    mqtt = Mqtt(APP_NAME)
 
-    # mqtt callbacks
-    mqttc.on_connect = on_connect
-    mqttc.on_message = on_message
-    mqttc.on_publish = on_publish
-    mqttc.on_subscribe = on_subscribe
-    mqttc.on_disconnect = on_disconnect
-    mqttc.username_pw_set(username, password)
+    mqtt.host = settings.mqtt_host
+    mqtt.port = int(settings.mqtt_port)
+    mqtt.client.username_pw_set(settings.mqtt_username, settings.mqtt_password)
+
+    # connect signals to slots
+    mqtt.connecting.connect(mqtt_connecting)
+    mqtt.connected.connect(mqtt_connected)
+    mqtt.connection_error.connect(mqtt_connection_error)
+    mqtt.disconnected.connect(mqtt_disconnected)
+    mqtt.reconnecting.connect(mqtt_reconnecting)
+    mqtt.reconnect_failure.connect(mqtt_reconnect_failure)
+
     # add on message callback for screenshot command
-    mqttc.message_callback_add(
-        f'{ca.cmd_topic}/screenshot', ca.on_cmd_screenshot)
+    # mqtt.client.message_callback_add(
+    #     f'{ca.cmd_topic}/screenshot', ca.on_cmd_screenshot)
+
     # add on message call back for notify command
-    mqttc.message_callback_add(f'{ca.cmd_topic}/notify', on_cmd_notify)
+    # mqtt.client.message_callback_add(f'{ca.cmd_topic}/notify', on_cmd_notify)
 
     # set the LWT, so if disconnected abruptly the state is set to Offline
-    mqttc.will_set(ca.state_topic, Status.OFFLINE.name.title(),
-                   qos=1, retain=False)
+    mqtt.client.will_set(ca.state_topic, Status.OFFLINE.name.title(),
+                         qos=1, retain=False)
 
-    # connect to mqtt broker
-    mqtt_connect(mqttc, broker, port)
+    # create a thread for mqtt
+    mqtt_thread = QThread()
+    # connect signals to slots
+    mqtt_thread.finished.connect(mqtt.deleteLater)
+    mqtt_thread.started.connect(mqtt.connect_to_broker)
+    # move mqtt process to new thread and start
+    mqtt.moveToThread(mqtt_thread)
+    mqtt_thread.start()
 
-    if not mqttc.connected:
-        dialog.show()
-    else:
-        # publish device configuration to home assistant
-        ca.publish_ha_config()
-
-        # publish online status
-        mqttc.publish(ca.status_topic, "online")
-        mqttc.publish(ca.state_topic, ca.state.name.title())
-
-        # subscribe to cmd topic
-        result = mqttc.subscribe(ca.subscribe_topic, 1)
-        if result[0] != 0:
-            notify("No Commands",
-                   "Could not subscribe, no command function available")
-
-        frequency = QTimer()
-        frequency.timeout.connect(do_update)
-        frequency.start(ca.freq)
+    frequency = QTimer()
+    frequency.timeout.connect(do_update)
+    frequency.start(ca.freq)
 
     sys.exit(app.exec_())
