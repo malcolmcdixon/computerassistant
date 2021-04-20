@@ -274,11 +274,16 @@ def menu_item_clicked(action):
     if menu_item == "Settings":
         dialog.show()
     elif menu_item == "Exit":
-        # publish offline status
-        ca.state = Status.OFFLINE
-        mqtt.client.publish(ca.status_topic, ca.state.name.lower())
-        while mqtt.client.want_write():
-            time.sleep(1)
+        # publish offline status if connected
+        if mqtt.state == ConnectionStatus.CONNECTED:
+
+            ca.state = Status.OFFLINE
+            mqtt_message_info = mqtt.client.publish(
+                ca.status_topic, ca.state.name.lower())
+            mqtt_message_info.wait_for_publish()
+            print(f"MQTTMessageInfo = {mqtt_message_info}")
+            print(f"Published: {mqtt_message_info.is_published()}")
+
         mqtt.enabled = False
         mqtt_thread.quit()
         mqtt_thread.wait()
