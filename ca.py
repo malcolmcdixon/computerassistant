@@ -44,7 +44,7 @@ class ComputerAssistant:
         self._ltu = datetime.datetime.now()
         self._ptu = self._ltu
         # frequency to check for activity and active timeout
-        self._freq = 15000
+        self._freq = 15
         self._active_timeout = 120
         # get computer name to use as unique id and within mqtt topics
         self.computer_name = computer_name
@@ -105,6 +105,7 @@ class ComputerAssistant:
     def event_fired(self, event):
         if isinstance(event, mouse.MoveEvent):
             return
+        print("event fired")
         self.update_last_time_used()
 
     def on_cmd_screenshot(self, client, userdata, msg):
@@ -127,7 +128,7 @@ class ComputerAssistant:
 
         # publish system config for Home Assistant
         # NOTE: send empty payload to delete device
-        self.client.publish(HA_TOPIC + self.computer_name + "/config",
+        mqtt.client.publish(HA_TOPIC + self.computer_name + "/config",
                             payload=payload, qos=0, retain=True)
 
 
@@ -173,7 +174,7 @@ def mqtt_connected():
            f"Connected to MQTT broker @ {mqtt.host}:{mqtt.port}")
 
     # publish device configuration to home assistant
-    # ca.publish_ha_config()
+    ca.publish_ha_config()
 
     # publish online status
     mqtt.client.publish(ca.status_topic, "online")
@@ -210,19 +211,11 @@ def mqtt_reconnect_failure():
 
 
 def do_update():
-    #print("do update loop")
-    state = mqtt.state
-    #print(f"Connection status: {state}")
-    if state == ConnectionStatus.CONNECTION_ERROR:
-        print("Connection Error...")
+    if mqtt.state != ConnectionStatus.CONNECTED:
         return
-
-    if state != ConnectionStatus.CONNECTED:
-        return
-
-    print("Connected so do some work...")
-
+    print("running loop...")
     if ca.can_trigger():
+        print("triggered...")
         ca.update_previous_time()
         if ca.state != Status.ACTIVE:
             ca.state = Status.ACTIVE
@@ -230,10 +223,15 @@ def do_update():
 
         window_title = get_window_title()
         current_window = json.dumps(window_title)
+
+        print(f"current window: {current_window}")
+
         mqtt.client.publish(ca.attribute_topic, '{"Last Active At":"' +
                             ca.last_time_used.strftime("%d/%m/%Y %H:%M:%S") +
                             '","Current Window":' + current_window + '}')
+
         # TODO: check have valid screenshot else send screen grab error image
+
         image = screenshot()
         if image is not None:
             mqtt.client.publish(ca.screenshot_topic, image)
@@ -276,6 +274,11 @@ def menu_item_clicked(action):
     if menu_item == "Settings":
         dialog.show()
     elif menu_item == "Exit":
+        # publish offline status
+        ca.state = Status.OFFLINE
+        mqtt.client.publish(ca.status_topic, ca.state.name.lower())
+        while mqtt.client.want_write():
+            time.sleep(1)
         mqtt.enabled = False
         mqtt_thread.quit()
         mqtt_thread.wait()
@@ -360,6 +363,6 @@ if __name__ == "__main__":
 
     frequency = QTimer()
     frequency.timeout.connect(do_update)
-    frequency.start(ca.freq)
+    frequency.start(ca.freq * 1000)
 
     sys.exit(app.exec_())
