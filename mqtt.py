@@ -50,8 +50,10 @@ class Mqtt(QObject):
         self.clean = clean
         self.client = mqtt.Client(self.client_id, self.clean)
         self.state = ConnectionStatus.DISCONNECTED
-        self.host = ""
+        self.host = None
         self.port = 1883
+        self.username = None
+        self.password = None
         self.timeout = 15
         self.reconnect_attempts = 0
         self.max_reconnect_attempts = 2
@@ -65,6 +67,7 @@ class Mqtt(QObject):
     @Slot()
     def connect_to_broker(self):
         # connect to the MQTT broker
+        print(f"Connect to broker...enabled = {self.enabled}")
         self.reconnect_attempts = 0
         while self.enabled:
             # signal the reconnect attempt no. if applicable
@@ -74,6 +77,7 @@ class Mqtt(QObject):
                 self.client.loop_start()
                 self.state = ConnectionStatus.CONNECTING
                 self.connecting.emit()
+                self.client.username_pw_set(self.username, self.password)
                 self.client.connect_async(self.host, self.port)
 
                 # wait for successful connection
@@ -119,6 +123,19 @@ class Mqtt(QObject):
         if self.client.is_connected():
             self.state = ConnectionStatus.DISCONNECTING
             self.client.disconnect()
+
+    @Slot()
+    def reconnect_to_broker(self):
+        print("reconnect to broker...")
+        self.state = ConnectionStatus.RECONNECTING
+        # disconnect
+        self.disconnect_from_broker()
+        # reinitiallise client
+        # self.client.reinitialise()
+        # enable connection
+        self.enabled = True
+        # reconnect
+        self.connect_to_broker()
 
     @Slot()
     def publish(self):

@@ -34,3 +34,12 @@ class SystemTrayIcon(QSystemTrayIcon):
             action.setIcon(QIcon(CA_CLOSE_ICON))
             # add menu to system tray icon
             self.setContextMenu(menu)
+
+    def notify(self, title, message, icon):
+        if self.supportsMessages():
+            # can use QSystemTrayIcon.MessageIcon.Information |
+            # Critical | Warning | NoIcon for icon
+            self.showMessage(title, message, icon)
+
+    def tooltip(self, tooltip_str):
+        self.setToolTip(tooltip_str)

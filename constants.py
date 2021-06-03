@@ -43,6 +43,8 @@ RESOURCE_BASE_PATH = getattr(sys, '_MEIPASS', SETTINGS_PATH)
 # ICONS
 # Computer Assistant Icon
 CA_ICON = f"{RESOURCE_BASE_PATH}/images/computer-assistant-icon.png"
+CA_WARNING_ICON = f"{RESOURCE_BASE_PATH}/images/computer-assistant-icon-warning.png"
+CA_CRITICAL_ICON = f"{RESOURCE_BASE_PATH}/images/computer-assistant-icon-critical.png"
 CA_MQTT_ICON = f"{RESOURCE_BASE_PATH}/images/mqtt_icon_64x64.png"
 CA_SAVE_ICON = f"{RESOURCE_BASE_PATH}/images/save_blue_128x128.png"
 CA_CLOSE_ICON = f"{RESOURCE_BASE_PATH}/images/close_blue_128x128.png"

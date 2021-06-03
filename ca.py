@@ -16,7 +16,7 @@ import logging
 from platform import uname
 from PySide2.QtWidgets import QApplication
 from PySide2.QtGui import QIcon
-from PySide2.QtCore import QTimer, Slot, QThread
+from PySide2.QtCore import QTimer, Slot, QThread, Signal, QObject
 import keyboard
 import mouse
 from PIL import ImageGrab
@@ -30,8 +30,12 @@ from constants import (
     Status,
     DEFAULT_SETTINGS,
     CA_ICON,
+    CA_WARNING_ICON,
+    CA_CRITICAL_ICON,
     CA_SETTINGS
 )
+
+# import constants
 from settings import JSONSettings, SettingsDialog
 from systray import SystemTrayIcon
 from microsoft import windows
@@ -39,8 +43,11 @@ from imageprocess import convert
 from mqtt import Mqtt, ConnectionStatus
 
 
-class ComputerAssistant:
+class ComputerAssistant(QObject):
+    settings_updated = Signal()
+
     def __init__(self, computer_name: str):
+        super().__init__()
         self._ltu = datetime.datetime.now()
         self._ptu = self._ltu
         # frequency to check for activity and active timeout
@@ -105,7 +112,6 @@ class ComputerAssistant:
     def event_fired(self, event):
         if isinstance(event, mouse.MoveEvent):
             return
-        print("event fired")
         self.update_last_time_used()
 
     def on_cmd_screenshot(self, client, userdata, msg):
@@ -170,8 +176,10 @@ def mqtt_connecting():
 
 @Slot()
 def mqtt_connected():
-    notify("MQTT Connection",
-           f"Connected to MQTT broker @ {mqtt.host}:{mqtt.port}")
+    tray_icon.tooltip(f"{APP_NAME} - Connected")
+    tray_icon.setIcon(QIcon(CA_ICON))
+    tray_icon.notify("MQTT Connection",
+                     f"Connected to MQTT broker @ {mqtt.host}:{mqtt.port}", tray_icon.MessageIcon.Information)
 
     # publish device configuration to home assistant
     ca.publish_ha_config()
@@ -183,13 +191,16 @@ def mqtt_connected():
     # subscribe to cmd topic
     result = mqtt.client.subscribe(ca.subscribe_topic, 1)
     if result[0] != 0:
-        notify("No Commands",
-               "Could not subscribe, no command function available")
+        tray_icon.notify("No Commands",
+                         "Could not subscribe, no command function available", tray_icon.MessageIcon.Warning)
 
 
 @Slot()
 def mqtt_connection_error(err):
-    print(f"An error occurred:{err}")
+    tray_icon.tooltip(f"{APP_NAME} - Connection Error")
+    tray_icon.setIcon(QIcon(CA_CRITICAL_ICON))
+    tray_icon.notify("MQTT Connection Error",
+                     f"An error occurred:{err}", tray_icon.MessageIcon.Critical)
 
 
 @Slot()
@@ -240,27 +251,26 @@ def do_update():
         mqtt.client.publish(ca.state_topic, ca.state.name.title())
 
 
-def notify(title, message):
-    if tray_icon.supportsMessages():
-        # can use QSystemTrayIcon.Information |
-        # Critical | Warning | NoIcon for icon
-        tray_icon.showMessage(title, message,
-                              QIcon(CA_ICON))
-
-
 def on_cmd_notify(client, userdata, msg):
     notification = json.loads(msg.payload)
-    notify(notification["title"], notification["message"])
+    tray_icon.notify(
+        notification["title"], notification["message"], tray_icon.MessageIcon.Information)
 
 
 @Slot()
 def dialog_saved():
     logging.debug("Settings just saved")
-    # update broker details
-    host = dialog.mqtt_host.text()
-    port = dialog.mqtt_port.text()
-    username = dialog.mqtt_username.text()
-    password = dialog.mqtt_password.text()
+    # update mqtt connection details
+    mqtt.host = settings.mqtt_host
+    mqtt.port = int(settings.mqtt_port)
+    mqtt.username = settings.mqtt_username
+    mqtt.password = settings.mqtt_password
+
+    # disable connection
+    mqtt.enabled = False
+    # emit signal to reconnect to broker with new details
+    print("emit signal")
+    ca.settings_updated.emit()
 
 
 @Slot()
@@ -278,11 +288,12 @@ def menu_item_clicked(action):
         if mqtt.state == ConnectionStatus.CONNECTED:
 
             ca.state = Status.OFFLINE
+            mqtt.client.publish(ca.state_topic, ca.state.name.title())
             mqtt_message_info = mqtt.client.publish(
                 ca.status_topic, ca.state.name.lower())
             mqtt_message_info.wait_for_publish()
-            print(f"MQTTMessageInfo = {mqtt_message_info}")
-            print(f"Published: {mqtt_message_info.is_published()}")
+            #print(f"MQTTMessageInfo = {mqtt_message_info}")
+            #print(f"Published: {mqtt_message_info.is_published()}")
 
         mqtt.enabled = False
         mqtt_thread.quit()
@@ -302,7 +313,7 @@ if __name__ == "__main__":
     # create notification area ui
     icon_image = QIcon(CA_ICON)
     tray_icon = SystemTrayIcon(icon_image)
-    tray_icon.setToolTip(APP_NAME)
+    tray_icon.tooltip(APP_NAME)
     tray_icon.messageClicked.connect(message_clicked)
     # connect triggered signal of context menu to menu_item_clicked function
     tray_icon.contextMenu().triggered.connect(menu_item_clicked)
@@ -312,10 +323,11 @@ if __name__ == "__main__":
     try:
         settings = JSONSettings(CA_SETTINGS, DEFAULT_SETTINGS)
         if not settings.loaded:
-            notify("Settings Error",
-                   "Unable to load settings even default settings!")
+            tray_icon.notify("Settings Error",
+                             "Unable to load settings even default settings!", tray_icon.MessageIcon.Critical)
     except json.JSONDecodeError:
-        notify("Invalid JSON", "The settings file is not valid JSON")
+        tray_icon.notify(
+            "Invalid JSON", "The settings file is not valid JSON", tray_icon.MessageIcon.Critical)
 
     # create settings dialog
     dialog = SettingsDialog(APP_NAME, CA_ICON, settings)
@@ -336,7 +348,12 @@ if __name__ == "__main__":
 
     mqtt.host = settings.mqtt_host
     mqtt.port = int(settings.mqtt_port)
-    mqtt.client.username_pw_set(settings.mqtt_username, settings.mqtt_password)
+    mqtt.username = settings.mqtt_username
+    mqtt.password = settings.mqtt_password
+
+    # set the LWT, so if disconnected abruptly the state is set to Offline
+    mqtt.client.will_set(ca.state_topic, Status.OFFLINE.name.title(),
+                         qos=1, retain=False)
 
     # connect signals to slots
     mqtt.connecting.connect(mqtt_connecting)
@@ -345,6 +362,7 @@ if __name__ == "__main__":
     mqtt.disconnected.connect(mqtt_disconnected)
     mqtt.reconnecting.connect(mqtt_reconnecting)
     mqtt.reconnect_failure.connect(mqtt_reconnect_failure)
+    ca.settings_updated.connect(mqtt.reconnect_to_broker)
 
     # add on message callback for screenshot command
     # mqtt.client.message_callback_add(
@@ -352,10 +370,6 @@ if __name__ == "__main__":
 
     # add on message call back for notify command
     # mqtt.client.message_callback_add(f'{ca.cmd_topic}/notify', on_cmd_notify)
-
-    # set the LWT, so if disconnected abruptly the state is set to Offline
-    mqtt.client.will_set(ca.state_topic, Status.OFFLINE.name.title(),
-                         qos=1, retain=False)
 
     # create a thread for mqtt
     mqtt_thread = QThread()
