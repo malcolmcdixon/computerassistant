@@ -67,7 +67,6 @@ class Mqtt(QObject):
     @Slot()
     def connect_to_broker(self):
         # connect to the MQTT broker
-        print(f"Connect to broker...enabled = {self.enabled}")
         self.reconnect_attempts = 0
         while self.enabled:
             # signal the reconnect attempt no. if applicable
@@ -96,7 +95,6 @@ class Mqtt(QObject):
                 self.state = ConnectionStatus.CONNECTION_ERROR
                 # get exception's class details
                 exception = sys.exc_info()
-                print(exception)
                 exception_class = str(exception[0]).split("'")[1]
                 self.connection_error.emit(
                     camel_case_to_sent_case(exception_class))

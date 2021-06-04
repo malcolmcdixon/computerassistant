@@ -171,7 +171,7 @@ def screenshot() -> bytearray:
 
 @Slot()
 def mqtt_connecting():
-    print("MQTT connecting...")
+    tray_icon.tooltip(f"{APP_NAME} - Connecting")
 
 
 @Slot()
@@ -207,23 +207,22 @@ def mqtt_connection_error(err):
 @Slot()
 def mqtt_disconnected(rc):
     if rc == 0:
-        print("Disconnected")
+        tray_icon.tooltip(f"{APP_NAME} - Disconnected")
     else:
-        print("Unexpected disconnection...")
         tray_icon.tooltip(f"{APP_NAME} - Disconnected Unexpectedly")
         tray_icon.setIcon(QIcon(CA_WARNING_ICON))
-        tray_icon.notify("MQTT Unexpected Disconnection",
+        tray_icon.notify("MQTT Disconnected",
                          "An unexpected disconnection occurred, attempting automatic reconnection", tray_icon.MessageIcon.Warning)
 
 
 @Slot()
 def mqtt_reconnecting(reconnect_attempt):
-    print(f"reconnecting...{reconnect_attempt} time(s)")
+    tray_icon.tooltip(
+        f"{APP_NAME} - Reconnecting...attempt: {reconnect_attempt}")
 
 
 @Slot()
 def mqtt_reconnect_failure():
-    print("Cannot reconnect...please check settings")
     # display reconnect menu option
     tray_icon.contextMenu().actions()[0].setVisible(True)
 
@@ -236,9 +235,7 @@ def mqtt_reconnect_failure():
 def do_update():
     if mqtt.state != ConnectionStatus.CONNECTED:
         return
-    print("running loop...")
     if ca.can_trigger():
-        print("triggered...")
         ca.update_previous_time()
         if ca.state != Status.ACTIVE:
             ca.state = Status.ACTIVE
@@ -246,8 +243,6 @@ def do_update():
 
         window_title = get_window_title()
         current_window = json.dumps(window_title)
-
-        print(f"current window: {current_window}")
 
         mqtt.client.publish(ca.attribute_topic, '{"Last Active At":"' +
                             ca.last_time_used.strftime("%d/%m/%Y %H:%M:%S") +
@@ -271,7 +266,6 @@ def on_cmd_notify(client, userdata, msg):
 
 @Slot()
 def dialog_saved():
-    logging.debug("Settings just saved")
     # update mqtt connection details
     mqtt.host = settings.mqtt_host
     mqtt.port = int(settings.mqtt_port)
@@ -281,13 +275,13 @@ def dialog_saved():
     # disable connection
     mqtt.enabled = False
     # emit signal to reconnect to broker with new details
-    print("emit signal")
     ca.attempt_reconnect.emit()
 
 
 @Slot()
 def message_clicked():
-    logging.debug("Message clicked")
+    # TODO add functionality to allow user-defined action when notification clicked
+    pass
 
 
 @Slot()
