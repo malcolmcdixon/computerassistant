@@ -114,9 +114,6 @@ class ComputerAssistant(QObject):
             return
         self.update_last_time_used()
 
-    def on_cmd_screenshot(self, client, userdata, msg):
-        client.publish(self.screenshot_topic, screenshot())
-
     def publish_ha_config(self):
         # build payload for home assistant system config
         payload = f'{{"availability_topic":"{self.status_topic}",' \
@@ -264,6 +261,10 @@ def on_cmd_notify(client, userdata, msg):
         notification["title"], notification["message"], tray_icon.MessageIcon.Information)
 
 
+def on_cmd_screenshot(self, client, userdata):
+    mqtt.client.publish(ca.screenshot_topic, screenshot())
+
+
 @Slot()
 def dialog_saved():
     # update mqtt connection details
@@ -373,11 +374,11 @@ if __name__ == "__main__":
     ca.attempt_reconnect.connect(mqtt.reconnect_to_broker)
 
     # add on message callback for screenshot command
-    # mqtt.client.message_callback_add(
-    #     f'{ca.cmd_topic}/screenshot', ca.on_cmd_screenshot)
+    mqtt.client.message_callback_add(
+        f'{ca.cmd_topic}/screenshot', on_cmd_screenshot)
 
     # add on message call back for notify command
-    # mqtt.client.message_callback_add(f'{ca.cmd_topic}/notify', on_cmd_notify)
+    mqtt.client.message_callback_add(f'{ca.cmd_topic}/notify', on_cmd_notify)
 
     # create a thread for mqtt
     mqtt_thread = QThread()
