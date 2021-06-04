@@ -54,7 +54,7 @@ class Mqtt(QObject):
         self.port = 1883
         self.username = None
         self.password = None
-        self.timeout = 15
+        self.timeout = 30
         self.reconnect_attempts = 0
         self.max_reconnect_attempts = 2
         # connect callbacks
@@ -124,7 +124,6 @@ class Mqtt(QObject):
 
     @Slot()
     def reconnect_to_broker(self):
-        print("reconnect to broker...")
         self.state = ConnectionStatus.RECONNECTING
         # disconnect
         self.disconnect_from_broker()

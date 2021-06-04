@@ -7,7 +7,7 @@
 import ipaddress
 import json
 from PySide2.QtWidgets import QDialog, QWidget, QLineEdit, QFormLayout,\
-    QTabWidget, QVBoxLayout, QDialogButtonBox
+    QTabWidget, QVBoxLayout, QDialogButtonBox, QSpinBox, QLabel
 
 from PySide2.QtGui import QIcon, QIntValidator
 from PySide2.QtCore import Qt, QSize
@@ -15,7 +15,8 @@ from PySide2.QtCore import Qt, QSize
 from constants import (
     CA_MQTT_ICON,
     CA_SAVE_ICON,
-    CA_CLOSE_ICON)
+    CA_CLOSE_ICON,
+    CA_TIMER_ICON)
 
 
 class SettingsDialog(QDialog):
@@ -52,10 +53,36 @@ class SettingsDialog(QDialog):
         # create tab
         self.tab = QTabWidget()
 
-        # create page
+        # create MQTT settings page
         tab_page = QWidget()
         tab_page.setLayout(form_layout)
-        self.tab.addTab(tab_page, QIcon(CA_MQTT_ICON), "MQTT")
+        self.tab.addTab(tab_page, QIcon(CA_MQTT_ICON), "&MQTT")
+
+        # create Timings settings page
+        self.frequency = QSpinBox()
+        self.frequency.setMinimum(5)
+        self.frequency.setMaximum(3600)
+        self.frequency.setSingleStep(5)
+        self.active_timeout = QSpinBox()
+        self.active_timeout.setMinimum(30)
+        self.active_timeout.setMaximum(3600)
+        self.active_timeout.setSingleStep(5)
+        self.mqtt_timeout = QSpinBox()
+        self.mqtt_timeout.setMinimum(5)
+        self.mqtt_timeout.setMaximum(600)
+        self.mqtt_timeout.setSingleStep(5)
+
+        form_layout = QFormLayout()
+        form_layout.addRow(QLabel("All timings are in seconds"))
+        form_layout.addRow("Update &Frequency (5 - 3600)", self.frequency)
+        form_layout.addRow("Active &Status Timeout (30 - 3600)",
+                           self.active_timeout)
+        form_layout.addRow(
+            "MQTT &Connection Timeout (5 - 600)", self.mqtt_timeout)
+
+        tab_page = QWidget()
+        tab_page.setLayout(form_layout)
+        self.tab.addTab(tab_page, QIcon(CA_TIMER_ICON), "&Timings")
 
         # create button box
         self.button_box = \
@@ -82,11 +109,15 @@ class SettingsDialog(QDialog):
         self.settings.mqtt_port = self.mqtt_port.text()
         self.settings.mqtt_username = self.mqtt_username.text()
         self.settings.mqtt_password = self.mqtt_password.text()
+        self.settings.frequency = self.frequency.value()
+        self.settings.active_timeout = self.active_timeout.value()
+        self.settings.mqtt_timeout = self.mqtt_timeout.value()
         self.settings.save()
         super().accept()
 
     def mqtt_host_text_changed(self, text):
         try:
+            # test if valid IP address
             ip_address = ipaddress.ip_address(text)
             colour = "#C4DF9B"
         except ValueError:

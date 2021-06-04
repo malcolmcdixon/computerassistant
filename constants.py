@@ -32,7 +32,10 @@ DEFAULT_SETTINGS = """{
                         "mqtt_host": "",
                         "mqtt_port": 1883,
                         "mqtt_username": "",
-                        "mqtt_password": ""
+                        "mqtt_password": "",
+                        "frequency": 15,
+                        "active_timeout": 120,
+                        "mqtt_timeout": 30
                       }"""
 
 # RESOURCES
@@ -50,6 +53,7 @@ CA_SAVE_ICON = f"{RESOURCE_BASE_PATH}/images/save_blue_128x128.png"
 CA_CLOSE_ICON = f"{RESOURCE_BASE_PATH}/images/close_blue_128x128.png"
 CA_SETTINGS_ICON = f"{RESOURCE_BASE_PATH}/images/settings_blue_128x128.png"
 CA_RECONNECT_ICON = f"{RESOURCE_BASE_PATH}/images/reconnect_128x128.png"
+CA_TIMER_ICON = f"{RESOURCE_BASE_PATH}/images/timer_64x64.png"
 
 # FILES
 # Settings file

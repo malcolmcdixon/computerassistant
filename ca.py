@@ -102,6 +102,18 @@ class ComputerAssistant(QObject):
     def freq(self):
         return self._freq
 
+    @freq.setter
+    def freq(self, value):
+        self._freq = value
+
+    @property
+    def active_timeout(self):
+        return self._active_timeout
+
+    @active_timeout.setter
+    def active_timeout(self, value):
+        self._active_timeout = value
+
     def can_trigger(self):
         return (self._ltu - self._ptu).seconds > self._freq
 
@@ -230,6 +242,9 @@ def mqtt_reconnect_failure():
 
 
 def do_update():
+    print("frequency", ca.freq)
+    print("active timeout", ca.active_timeout)
+    print("mqtt timeout", mqtt.timeout)
     if mqtt.state != ConnectionStatus.CONNECTED:
         return
     if ca.can_trigger():
@@ -267,11 +282,16 @@ def on_cmd_screenshot(self, client, userdata):
 
 @Slot()
 def dialog_saved():
+    # TODO only need to update if form is dirty
     # update mqtt connection details
     mqtt.host = settings.mqtt_host
     mqtt.port = int(settings.mqtt_port)
     mqtt.username = settings.mqtt_username
     mqtt.password = settings.mqtt_password
+    mqtt.timeout = settings.mqtt_timeout
+    # update timings
+    ca.freq = settings.frequency
+    ca.active_timeout = settings.active_timeout
 
     # disable connection
     mqtt.enabled = False
@@ -346,11 +366,17 @@ if __name__ == "__main__":
     dialog.mqtt_port.setText(str(settings.mqtt_port))
     dialog.mqtt_username.setText(str(settings.mqtt_username))
     dialog.mqtt_password.setText(str(settings.mqtt_password))
+    # load timing settings into dialog
+    dialog.frequency.setValue(settings.frequency)
+    dialog.active_timeout.setValue(settings.active_timeout)
+    dialog.mqtt_timeout.setValue(settings.mqtt_timeout)
 
     dialog.accepted.connect(dialog_saved)
 
     # create an instance of the ComputerAssistant class with the computer's name
     ca = ComputerAssistant(uname().node)
+    ca.freq = settings.frequency
+    ca.active_timeout = settings.active_timeout
 
     # create and configure the mqtt client
     mqtt = Mqtt(APP_NAME)
@@ -359,6 +385,7 @@ if __name__ == "__main__":
     mqtt.port = int(settings.mqtt_port)
     mqtt.username = settings.mqtt_username
     mqtt.password = settings.mqtt_password
+    mqtt.timeout = settings.mqtt_timeout
 
     # set the LWT, so if disconnected abruptly the state is set to Offline
     mqtt.client.will_set(ca.state_topic, Status.OFFLINE.name.title(),
@@ -388,6 +415,10 @@ if __name__ == "__main__":
     # move mqtt process to new thread and start
     mqtt.moveToThread(mqtt_thread)
     mqtt_thread.start()
+
+    print("frequency", ca.freq)
+    print("active timeout", ca.active_timeout)
+    print("mqtt timeout", mqtt.timeout)
 
     frequency = QTimer()
     frequency.timeout.connect(do_update)
