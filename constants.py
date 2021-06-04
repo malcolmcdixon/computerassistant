@@ -49,6 +49,7 @@ CA_MQTT_ICON = f"{RESOURCE_BASE_PATH}/images/mqtt_icon_64x64.png"
 CA_SAVE_ICON = f"{RESOURCE_BASE_PATH}/images/save_blue_128x128.png"
 CA_CLOSE_ICON = f"{RESOURCE_BASE_PATH}/images/close_blue_128x128.png"
 CA_SETTINGS_ICON = f"{RESOURCE_BASE_PATH}/images/settings_blue_128x128.png"
+CA_RECONNECT_ICON = f"{RESOURCE_BASE_PATH}/images/reconnect_128x128.png"
 
 # FILES
 # Settings file

@@ -8,6 +8,7 @@ from PySide2.QtWidgets import QMenu, QSystemTrayIcon
 from PySide2.QtGui import QIcon
 
 from constants import (
+    CA_RECONNECT_ICON,
     CA_SETTINGS_ICON,
     CA_CLOSE_ICON
 )
@@ -20,6 +21,11 @@ class SystemTrayIcon(QSystemTrayIcon):
         if self.isSystemTrayAvailable():
             # create a menu for system tray icon
             menu = QMenu()
+
+            # add Reconnect menu option, only visible once disconnected
+            action = menu.addAction("Reconnect")
+            action.setIcon(QIcon(CA_RECONNECT_ICON))
+            action.setVisible(False)
 
             # add Settings menu option with bold font
             action = menu.addAction("Settings")

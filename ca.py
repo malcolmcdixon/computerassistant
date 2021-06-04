@@ -44,7 +44,7 @@ from mqtt import Mqtt, ConnectionStatus
 
 
 class ComputerAssistant(QObject):
-    settings_updated = Signal()
+    attempt_reconnect = Signal()
 
     def __init__(self, computer_name: str):
         super().__init__()
@@ -181,6 +181,9 @@ def mqtt_connected():
     tray_icon.notify("MQTT Connection",
                      f"Connected to MQTT broker @ {mqtt.host}:{mqtt.port}", tray_icon.MessageIcon.Information)
 
+    # hide reconnect menu action if visible
+    tray_icon.contextMenu().actions()[0].setVisible(False)
+
     # publish device configuration to home assistant
     ca.publish_ha_config()
 
@@ -198,9 +201,7 @@ def mqtt_connected():
 @Slot()
 def mqtt_connection_error(err):
     tray_icon.tooltip(f"{APP_NAME} - Connection Error")
-    tray_icon.setIcon(QIcon(CA_CRITICAL_ICON))
-    tray_icon.notify("MQTT Connection Error",
-                     f"An error occurred:{err}", tray_icon.MessageIcon.Critical)
+    tray_icon.setIcon(QIcon(CA_WARNING_ICON))
 
 
 @Slot()
@@ -209,6 +210,10 @@ def mqtt_disconnected(rc):
         print("Disconnected")
     else:
         print("Unexpected disconnection...")
+        tray_icon.tooltip(f"{APP_NAME} - Disconnected Unexpectedly")
+        tray_icon.setIcon(QIcon(CA_WARNING_ICON))
+        tray_icon.notify("MQTT Unexpected Disconnection",
+                         "An unexpected disconnection occurred, attempting automatic reconnection", tray_icon.MessageIcon.Warning)
 
 
 @Slot()
@@ -219,6 +224,13 @@ def mqtt_reconnecting(reconnect_attempt):
 @Slot()
 def mqtt_reconnect_failure():
     print("Cannot reconnect...please check settings")
+    # display reconnect menu option
+    tray_icon.contextMenu().actions()[0].setVisible(True)
+
+    tray_icon.tooltip(f"{APP_NAME} - Reconnection Failed")
+    tray_icon.setIcon(QIcon(CA_CRITICAL_ICON))
+    tray_icon.notify("MQTT Connection Error",
+                     "Cannot connect to the MQTT broker, reconnection attempts failed.\n Please check your settings and/or the status of your broker service.", tray_icon.MessageIcon.Critical)
 
 
 def do_update():
@@ -270,7 +282,7 @@ def dialog_saved():
     mqtt.enabled = False
     # emit signal to reconnect to broker with new details
     print("emit signal")
-    ca.settings_updated.emit()
+    ca.attempt_reconnect.emit()
 
 
 @Slot()
@@ -283,6 +295,8 @@ def menu_item_clicked(action):
     menu_item = action.iconText()
     if menu_item == "Settings":
         dialog.show()
+    elif menu_item == "Reconnect":
+        ca.attempt_reconnect.emit()
     elif menu_item == "Exit":
         # publish offline status if connected
         if mqtt.state == ConnectionStatus.CONNECTED:
@@ -362,7 +376,7 @@ if __name__ == "__main__":
     mqtt.disconnected.connect(mqtt_disconnected)
     mqtt.reconnecting.connect(mqtt_reconnecting)
     mqtt.reconnect_failure.connect(mqtt_reconnect_failure)
-    ca.settings_updated.connect(mqtt.reconnect_to_broker)
+    ca.attempt_reconnect.connect(mqtt.reconnect_to_broker)
 
     # add on message callback for screenshot command
     # mqtt.client.message_callback_add(
