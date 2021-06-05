@@ -109,6 +109,21 @@ payload:
 
 <img src="./github_images/notification.png" alt="An example notification">
 
+### Other Settings
+
+<img src="./github_images/settings_timing.png" alt="Timing Settings">
+
+To adjust the various timings in Computer Assistant, select the Timings tab in the Settings dialog.
+
+**Update Frequency**  
+Controls the interval time the program will check for activity and publish MQTT messages. Default 15 seconds.
+
+**Active Status Timeout**  
+Controls how long before the program determines that the computer is no longer active if no mouse or keyboard events are detected. Default 120 seconds.
+
+**MQTT Connection Timeout**  
+Controls how long before the program determines that a connection attempt to a MQTT broker has timed out. Default 30 seconds.
+
 ## Roadmap
 
 This project was initiated mainly as a programming exercise to test my recently gained knowledge of Python, to learn Qt and to send notifications to my computer from Home Assistant automations in Node-Red.
