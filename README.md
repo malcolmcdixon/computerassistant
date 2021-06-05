@@ -17,7 +17,7 @@ Commands can be published via MQTT to retrieve a current snapshot of the active 
 ## Installation
 
 The simplest method to get started is to copy computerassistant.exe from [releases](https://github.com/malcolmcdixon/computerassistant/releases) to any folder.  
-**Suggestion**: add to the startup folder.
+**Suggestion**: add a shortcut to computerassistant.exe in the startup folder.
 
 Alternatively, [clone or download](https://docs.github.com/en/github/getting-started-with-github/getting-changes-from-a-remote-repository#cloning-a-repository) the source code, preferably into a [virtual environment](https://docs.python.org/3/library/venv.html) and run  
 `$ pip install -r requirements.txt`
@@ -92,13 +92,13 @@ There are only 2 commands, screenshot and notify, to use these publish a message
 
 #### Screenshot
 
-The screenshot command will tell Computer Assistant to send an updated image of the active window.  
+The screenshot command will instruct Computer Assistant to send an updated image of the active window.  
 topic:  
 _computer-assistant/sensor/{your-computer-name}/cmd/screenshot_
 
 #### Notify
 
-The notify command will create a notification in the Windows Noficiation
+The notify command will create a notification in the Windows Notification
 topic:  
 _computer-assistant/sensor/{your-computer-name}/cmd/notify_  
 payload:
@@ -108,6 +108,21 @@ payload:
 ```
 
 <img src="./github_images/notification.png" alt="An example notification">
+
+### Other Settings
+
+To adjust the various timings in Computer Assistant, select the Timings tab in the Settings dialog.
+
+<img src="./github_images/settings_timing.png" alt="Timing Settings">
+
+**Update Frequency**  
+Controls the interval time the program will check for activity and publish MQTT messages. Default 15 seconds.
+
+**Active Status Timeout**  
+Controls how long before the program determines that the computer is no longer active if no mouse or keyboard events are detected. Default 120 seconds.
+
+**MQTT Connection Timeout**  
+Controls how long before the program determines that a connection attempt to a MQTT broker has timed out. Default 30 seconds.
 
 ## Roadmap
 

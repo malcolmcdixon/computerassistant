@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # convert.py
-# written by m.c.dixon 2020
+# written by Malcolm Dixon 2020
 # function to convert image to byte array
 
 from io import BytesIO

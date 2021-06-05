@@ -18,11 +18,12 @@ class Status(Enum):
 
 
 # Application Name
-APP_NAME = "computer-assistant"
+APP_NAME = "Computer Assistant"
+TOPIC_APP_NAME = (APP_NAME.lower()).replace(" ", "-")
 
 # MQTT Topics
-HA_TOPIC = f"homeassistant/sensor/{APP_NAME}/"
-BASE_TOPIC = f"{APP_NAME}/sensor/"
+HA_TOPIC = f"homeassistant/sensor/{TOPIC_APP_NAME}/"
+BASE_TOPIC = f"{TOPIC_APP_NAME}/sensor/"
 
 MQTT_TIMEOUT = 30
 
@@ -31,7 +32,10 @@ DEFAULT_SETTINGS = """{
                         "mqtt_host": "",
                         "mqtt_port": 1883,
                         "mqtt_username": "",
-                        "mqtt_password": ""
+                        "mqtt_password": "",
+                        "frequency": 15,
+                        "active_timeout": 120,
+                        "mqtt_timeout": 30
                       }"""
 
 # RESOURCES
@@ -42,10 +46,14 @@ RESOURCE_BASE_PATH = getattr(sys, '_MEIPASS', SETTINGS_PATH)
 # ICONS
 # Computer Assistant Icon
 CA_ICON = f"{RESOURCE_BASE_PATH}/images/computer-assistant-icon.png"
+CA_WARNING_ICON = f"{RESOURCE_BASE_PATH}/images/computer-assistant-icon-warning.png"
+CA_CRITICAL_ICON = f"{RESOURCE_BASE_PATH}/images/computer-assistant-icon-critical.png"
 CA_MQTT_ICON = f"{RESOURCE_BASE_PATH}/images/mqtt_icon_64x64.png"
 CA_SAVE_ICON = f"{RESOURCE_BASE_PATH}/images/save_blue_128x128.png"
 CA_CLOSE_ICON = f"{RESOURCE_BASE_PATH}/images/close_blue_128x128.png"
 CA_SETTINGS_ICON = f"{RESOURCE_BASE_PATH}/images/settings_blue_128x128.png"
+CA_RECONNECT_ICON = f"{RESOURCE_BASE_PATH}/images/reconnect_128x128.png"
+CA_TIMER_ICON = f"{RESOURCE_BASE_PATH}/images/timer_64x64.png"
 
 # FILES
 # Settings file

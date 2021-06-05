@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # windows.py
-# written by m.c.dixon 2020
+# written by Malcolm Dixon 2020
 # functions for working with MS Windows windows
 
 from ctypes import windll, wintypes, create_unicode_buffer, byref
