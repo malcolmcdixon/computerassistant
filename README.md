@@ -111,9 +111,9 @@ payload:
 
 ### Other Settings
 
-<img src="./github_images/settings_timing.png" alt="Timing Settings">
-
 To adjust the various timings in Computer Assistant, select the Timings tab in the Settings dialog.
+
+<img src="./github_images/settings_timing.png" alt="Timing Settings">
 
 **Update Frequency**  
 Controls the interval time the program will check for activity and publish MQTT messages. Default 15 seconds.
