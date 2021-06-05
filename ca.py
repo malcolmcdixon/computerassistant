@@ -53,6 +53,8 @@ class ComputerAssistant(QObject):
         # frequency to check for activity and active timeout
         self._freq = 15
         self._active_timeout = 120
+        self.timer = QTimer()
+        self.freq = 15
         # get computer name to use as unique id and within mqtt topics
         self.computer_name = computer_name
 
@@ -105,6 +107,7 @@ class ComputerAssistant(QObject):
     @freq.setter
     def freq(self, value):
         self._freq = value
+        self.timer.setInterval(value * 1000)
 
     @property
     def active_timeout(self):
@@ -282,21 +285,31 @@ def on_cmd_screenshot(self, client, userdata):
 
 @Slot()
 def dialog_saved():
-    # TODO only need to update if form is dirty
     # update mqtt connection details
-    mqtt.host = settings.mqtt_host
-    mqtt.port = int(settings.mqtt_port)
-    mqtt.username = settings.mqtt_username
-    mqtt.password = settings.mqtt_password
+    mqtt_changed = False
+    if mqtt.host != settings.mqtt_host:
+        mqtt.host = settings.mqtt_host
+        mqtt_changed = True
+    if mqtt.port != int(settings.mqtt_port):
+        mqtt.port = int(settings.mqtt_port)
+        mqtt_changed = True
+    if mqtt.username != settings.mqtt_username:
+        mqtt.username = settings.mqtt_username
+        mqtt_changed = True
+    if mqtt.password != settings.mqtt_password:
+        mqtt.password = settings.mqtt_password
+        mqtt_changed = True
     mqtt.timeout = settings.mqtt_timeout
     # update timings
     ca.freq = settings.frequency
     ca.active_timeout = settings.active_timeout
 
-    # disable connection
-    mqtt.enabled = False
-    # emit signal to reconnect to broker with new details
-    ca.attempt_reconnect.emit()
+    # reconnect if mqtt details changed
+    if mqtt_changed:
+        # disable connection
+        mqtt.enabled = False
+        # emit signal to reconnect to broker with new details
+        ca.attempt_reconnect.emit()
 
 
 @Slot()
@@ -360,17 +373,6 @@ if __name__ == "__main__":
 
     # create settings dialog
     dialog = SettingsDialog(APP_NAME, CA_ICON, settings)
-
-    # load mqtt settings into dialog
-    dialog.mqtt_host.setText(str(settings.mqtt_host))
-    dialog.mqtt_port.setText(str(settings.mqtt_port))
-    dialog.mqtt_username.setText(str(settings.mqtt_username))
-    dialog.mqtt_password.setText(str(settings.mqtt_password))
-    # load timing settings into dialog
-    dialog.frequency.setValue(settings.frequency)
-    dialog.active_timeout.setValue(settings.active_timeout)
-    dialog.mqtt_timeout.setValue(settings.mqtt_timeout)
-
     dialog.accepted.connect(dialog_saved)
 
     # create an instance of the ComputerAssistant class with the computer's name
@@ -420,8 +422,10 @@ if __name__ == "__main__":
     print("active timeout", ca.active_timeout)
     print("mqtt timeout", mqtt.timeout)
 
-    frequency = QTimer()
-    frequency.timeout.connect(do_update)
-    frequency.start(ca.freq * 1000)
+    #frequency = QTimer()
+    # frequency.timeout.connect(do_update)
+    #frequency.start(ca.freq * 1000)
+    ca.timer.timeout.connect(do_update)
+    ca.timer.start()
 
     sys.exit(app.exec_())
