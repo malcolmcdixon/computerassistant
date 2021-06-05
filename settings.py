@@ -136,6 +136,7 @@ class SettingsDialog(QDialog):
 
     def accept(self):
         # save settings
+        self._dirty = False
         self.settings.mqtt_host = self.mqtt_host.text()
         self.settings.mqtt_port = self.mqtt_port.text()
         self.settings.mqtt_username = self.mqtt_username.text()
@@ -144,12 +145,7 @@ class SettingsDialog(QDialog):
         self.settings.active_timeout = self.active_timeout.value()
         self.settings.mqtt_timeout = self.mqtt_timeout.value()
         self.settings.save()
-        self._dirty = False
         super().accept()
-
-    def reject(self):
-        self.dirty = False
-        super().reject()
 
     def mqtt_host_text_changed(self, text):
         try:

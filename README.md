@@ -17,7 +17,7 @@ Commands can be published via MQTT to retrieve a current snapshot of the active 
 ## Installation
 
 The simplest method to get started is to copy computerassistant.exe from [releases](https://github.com/malcolmcdixon/computerassistant/releases) to any folder.  
-**Suggestion**: add to the startup folder.
+**Suggestion**: add a shortcut to computerassistant.exe in the startup folder.
 
 Alternatively, [clone or download](https://docs.github.com/en/github/getting-started-with-github/getting-changes-from-a-remote-repository#cloning-a-repository) the source code, preferably into a [virtual environment](https://docs.python.org/3/library/venv.html) and run  
 `$ pip install -r requirements.txt`

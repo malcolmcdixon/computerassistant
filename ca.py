@@ -415,13 +415,6 @@ if __name__ == "__main__":
     mqtt.moveToThread(mqtt_thread)
     mqtt_thread.start()
 
-    print("frequency", ca.freq)
-    print("active timeout", ca.active_timeout)
-    print("mqtt timeout", mqtt.timeout)
-
-    #frequency = QTimer()
-    # frequency.timeout.connect(do_update)
-    #frequency.start(ca.freq * 1000)
     ca.timer.timeout.connect(do_update)
     ca.timer.start()
 
