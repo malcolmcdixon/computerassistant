@@ -245,9 +245,6 @@ def mqtt_reconnect_failure():
 
 
 def do_update():
-    print("frequency", ca.freq)
-    print("active timeout", ca.active_timeout)
-    print("mqtt timeout", mqtt.timeout)
     if mqtt.state != ConnectionStatus.CONNECTED:
         return
     if ca.can_trigger():
