@@ -378,7 +378,7 @@ if __name__ == "__main__":
     ca.active_timeout = settings.active_timeout
 
     # create and configure the mqtt client
-    mqtt = Mqtt(APP_NAME)
+    mqtt = Mqtt(f"{APP_NAME}: {ca.computer_name}")
 
     mqtt.host = settings.mqtt_host
     mqtt.port = int(settings.mqtt_port)
